@@ -1,6 +1,7 @@
 package com.petproject.heladeria.vendedor;
 
 import co.com.sofka.domain.generic.AggregateEvent;
+import co.com.sofka.domain.generic.DomainEvent;
 import com.petproject.heladeria.cliente.values.Celular;
 import com.petproject.heladeria.cliente.values.Correo;
 import com.petproject.heladeria.cliente.values.Monto;
@@ -8,6 +9,7 @@ import com.petproject.heladeria.cliente.values.Nombre;
 import com.petproject.heladeria.vendedor.events.*;
 import com.petproject.heladeria.vendedor.values.*;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -20,14 +22,20 @@ public class Vendedor extends AggregateEvent<VendedorId> {
     protected Departamento departamento;
     protected Set<Comision> comisiones;
 
-    public Vendedor(VendedorId entityId, Nombre nombre, Correo correo, Celular celular) {
-        super(entityId);
+    public Vendedor(VendedorId vendedorId, Nombre nombre, Correo correo, Celular celular) {
+        super(vendedorId);
         appendChange(new VendedorCreado(nombre,correo,celular)).apply();
     }
 
     private Vendedor(VendedorId vendedorId){
         super(vendedorId);
         subscribe(new VendedorChange(this));
+    }
+
+    public static Vendedor from(VendedorId vendedorId, List<DomainEvent> events){
+        var vendedor = new Vendedor(vendedorId);
+        events.forEach(vendedor::applyEvent);
+        return vendedor;
     }
 
     public void agregarComision(ComisionId comisionId, Monto monto, Descripcion descripcion) {
